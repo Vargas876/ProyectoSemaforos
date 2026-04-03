@@ -191,16 +191,27 @@ public class AirportPanel extends JPanel {
         for (int i = 0; i < Airport.NUM_GATES; i++) {
             int x = gap + i * (gateWidth + gap);
             
-            g2.setColor(new Color(90, 95, 100)); // Manga de embarque
-            g2.fillRoundRect(x + gateWidth/2 - 15, gateY, 30, 50, 10, 10);
+            // Dibujar estructura de la Terminal (Puerta)
+            g2.setColor(new Color(60, 65, 70));
+            g2.fillRoundRect(x - 5, gateY + 40, gateWidth + 10, 80, 15, 15);
             
-            g2.setColor(new Color(255, 204, 0)); // Demarcación amarilla
+            // Túnel de embarque (Manga)
+            g2.setColor(new Color(100, 105, 110));
+            g2.fillRect(x + gateWidth/2 - 12, gateY, 24, 45);
+            g2.setColor(new Color(40, 40, 40));
+            for(int j = 0; j < 5; j++) { // Efecto acordeón
+                g2.drawLine(x + gateWidth/2 - 12, gateY + (j*8), x + gateWidth/2 + 12, gateY + (j*8));
+            }
+            
+            // Área de parqueo demarcada
+            g2.setColor(new Color(255, 204, 0, 150));
             g2.setStroke(new BasicStroke(2));
-            g2.drawRoundRect(x, gateY, gateWidth, 100, 20, 20);
+            g2.drawRoundRect(x + 5, gateY + 5, gateWidth - 10, 95, 15, 15);
             
-            g2.setColor(new Color(255, 255, 255, 150));
-            g2.setFont(new Font("SansSerif", Font.BOLD, 18));
-            g2.drawString("GATE " + (i + 1), x + gateWidth/2 - 30, gateY + 80);
+            // Nombre en español
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 16));
+            g2.drawString("PUERTA " + (i + 1), x + gateWidth/2 - 40, gateY + 85);
 
             Color gateLight = (airport.getAvailableGates() > 0) ? Color.GREEN : Color.RED;
             drawTrafficLight(g2, x + 10, gateY + 10, gateLight, "");
