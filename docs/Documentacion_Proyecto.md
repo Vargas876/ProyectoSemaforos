@@ -84,6 +84,7 @@ El Aeropuerto simula 1 Pista y 3 Puertas. Para el manejo seguro de concurrencia 
 - **Condición de Carrera Simulada (`logicRaceCondition`)**: Existe un modo demostrativo en el código donde intencionalmente el avión omite llamar la adquisición del candado de la pista (`runwaySemaphore.acquire()`). El resultado es una evidente e inmediata colisión y mezcla de estados no deterministas entre los distintos hilos al manipular datos y acciones de forma entretejida en zonas mutuamente excluyentes.
 
 **Diagrama: Flujo del error en Condición de Carrera**
+
 ```mermaid
 flowchart TD
     A(["Inicio: Avión Generado"]) --> B["Solicitar Puerta de Embarque"]
@@ -96,14 +97,15 @@ flowchart TD
     K --> R["⚠️ Despegar SIN CHEQUEAR PISTA"]
     R --> Q["Liberar Puerta (gates.release)"]
     Q --> T(["Fin: Vuelo Completado (🚨 Colisión)"])
-    
+  
     style I fill:#ffcccc,stroke:#ff0000,stroke-width:2px
     style R fill:#ffcccc,stroke:#ff0000,stroke-width:2px
 ```
 
 - **Simulación de Deadlock (`logicDeadlock`)**: El código se altera para obligar al hilo a pedir primero el medio exclusivo temporal (La Pista) antes que el destino múltiple (La Puerta). Esto viola el principio de jerarquía de Lock de recursos (Hold and Wait).
 
-**Diagrama: Flujo hacia el Abrazo Mortal (Deadlock)**
+**Diagrama: Flujo hacia del (Deadlock)**
+
 ```mermaid
 flowchart TD
     A(["Inicio: Avión Generado"]) --> B["Solicitar PISTA primero"]
@@ -111,26 +113,13 @@ flowchart TD
     G -->|No| H["Esperar Pista (Bloquea a detrás)"]
     G -->|Sí| I["Aduirir Pista"]
     I --> C{"¿Puertas disponibles? (gates.acquire)"}
-    C -->|No| D["🚨 Deadlock: El avión ocupa la pista eternamente esperando una puerta (que no se liberará porque los de adentro piden salir por la pista)"]
+    C -->|No| D[" Deadlock: El avión ocupa la pista eternamente esperando una puerta (que no se liberará porque los de adentro piden salir por la pista)"]
     C -->|Sí| J["Aterrizar..."]
 
     style D fill:#ffcccc,stroke:#ff0000,stroke-width:2px
 ```
 
 - **Resolución General**: Obligando a las rutinas de aterrizaje y despegue a pasar por el `runwaySemaphore` y manteniendo la secuencia rígida (Puerta -> Pista para llegar, Pista -> liberar Puerta para irse). Dicho semáforo impone que una vez un subproceso tome el relevo, cualquier paralelismo asíncrono que intercepte dicha lógica entrará en estado de "suspensión" hasta recibir una señal limpia de `release()`.
-
-### Evidencias Gráficas
-
-*(Reemplaza los corchetes con capturas de pantalla de la ejecución de la UI)*
-
-1. **Simulación Normal (Modo Seguro):**
-   *-> [Insertar Captura demostrando la distribución segura de aviones en puertas y en uso de pista]*
-2. **Ejecutivo con Race Conditions:**
-   *-> [Insertar Captura demostrando los logs mostrando colisión por salto de protocolos de exclusión]*
-3. **Simulación en Estado de Deadlock:**
-   *-> [Insertar Captura donde se demuestre el abrazo mortal provocado por el botón "Deadlock" – Los hilos se quedan congelados en "espera perpetua"]*
-
----
 
 ## 3. Conclusiones
 
